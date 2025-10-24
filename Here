@@ -1,0 +1,14 @@
+import fetch from "node-fetch";
+
+const branch = "v1"; // lower branch
+const filePath = "src/config.js";
+const repo = "user/repo";
+
+async function loadFile() {
+  const url = `https://raw.githubusercontent.com/${repo}/${branch}/${filePath}`;
+  const res = await fetch(url);
+  const text = await res.text();
+  console.log("Loaded file content:\n", text);
+}
+
+loadFile();
