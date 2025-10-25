@@ -1,0 +1,8 @@
+# Snyk security policy
+version: v1.19.0
+ignore: {}
+# patches apply automatically for vulnerabilities
+patch:
+  'SNYK-JS-LODASH-567746':
+    - lodash > package-lib > sub-dependency:
+        patched: '2023-01-01T00:00:00.000Z'
