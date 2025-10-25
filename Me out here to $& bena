@@ -1,0 +1,242 @@
+class BenaAllergyDevice {
+    constructor() {
+        this.userAllergens = new Set();
+        this.productDatabase = new Map();
+        this.emergencyContacts = [];
+        this.isActive = false;
+        
+        // Initialize with sample data
+        this.initializeSampleData();
+    }
+
+    // Initialize the device with sample data
+    initializeSampleData() {
+        // Sample product database (barcode -> ingredients)
+        this.productDatabase.set('123456789012', {
+            name: 'Safe Chocolate Chip Cookies',
+            ingredients: ['flour', 'sugar', 'chocolate chips', 'butter', 'eggs', 'vanilla'],
+            contains: [],
+            mayContain: []
+        });
+
+        this.productDatabase.set('987654321098', {
+            name: 'Peanut Butter Cookies',
+            ingredients: ['flour', 'sugar', 'peanuts', 'peanut oil', 'eggs', 'salt'],
+            contains: ['peanuts'],
+            mayContain: ['tree nuts']
+        });
+
+        this.productDatabase.set('456123789065', {
+            name: 'Granola Bar',
+            ingredients: ['oats', 'honey', 'almonds', 'chocolate', 'soy lecithin'],
+            contains: ['tree nuts', 'soy'],
+            mayContain: ['peanuts']
+        });
+
+        console.log('🛡️  Bena: "Device initialized and ready to protect you!"');
+    }
+
+    // MYSHIELD: Set user's allergens
+    setUserAllergens(allergens) {
+        this.userAllergens = new Set(allergens.map(allergen => allergen.toLowerCase()));
+        console.log(`🛡️  MyShield active. Protecting from: ${Array.from(this.userAllergens).join(', ')}`);
+        this.isActive = true;
+    }
+
+    // SAFE-SCAN: Scan a product by barcode
+    safeScan(barcode) {
+        if (!this.isActive) {
+            console.log('❌ Please set your allergens first using MyShield.');
+            return;
+        }
+
+        console.log(`🔍 Scanning product with barcode: ${barcode}...`);
+
+        const product = this.productDatabase.get(barcode);
+        
+        if (!product) {
+            this.showUncertainResult();
+            return;
+        }
+
+        // Check for direct allergens
+        const directAllergens = this.checkForAllergens(product.contains);
+        // Check for potential cross-contamination
+        const potentialAllergens = this.checkForAllergens(product.mayContain);
+
+        if (directAllergens.length > 0) {
+            this.showUnsafeResult(directAllergens, product.name);
+        } else if (potentialAllergens.length > 0) {
+            this.showCautionResult(potentialAllergens, product.name);
+        } else {
+            this.showSafeResult(product.name);
+        }
+    }
+
+    // Check ingredients against user allergens
+    checkForAllergens(ingredientList) {
+        return ingredientList.filter(ingredient => 
+            this.userAllergens.has(ingredient.toLowerCase())
+        );
+    }
+
+    // Display results
+    showSafeResult(productName) {
+        console.log(`🟢 GREEN LIGHT - Bena Clear!`);
+        console.log(`✅ "${productName}" is safe! No allergens detected.`);
+        this.triggerVisualFeedback('green');
+        this.playSound('safe');
+    }
+
+    showUnsafeResult(allergens, productName) {
+        console.log(`🔴 RED LIGHT - ALERT!`);
+        console.log(`❌ "${productName}" contains: ${allergens.join(', ')}. DO NOT CONSUME!`);
+        this.triggerVisualFeedback('red');
+        this.playSound('alert');
+        this.triggerVibration();
+    }
+
+    showCautionResult(potentialAllergens, productName) {
+        console.log(`🟡 YELLOW LIGHT - CAUTION`);
+        console.log(`⚠️  "${productName}" may contain: ${potentialAllergens.join(', ')}. Proceed with care.`);
+        this.triggerVisualFeedback('yellow');
+        this.playSound('caution');
+    }
+
+    showUncertainResult() {
+        console.log(`🟡 YELLOW LIGHT - UNCERTAIN`);
+        console.log(`🤔 Product not in database. Manual verification required.`);
+        this.triggerVisualFeedback('yellow');
+        this.playSound('caution');
+    }
+
+    // QUICK-QUERY: Voice/text query about foods
+    quickQuery(foodItem) {
+        const commonDishes = {
+            'butter chicken': { warning: 'high', allergens: ['dairy'], message: 'Typically contains yogurt and cream' },
+            'pad thai': { warning: 'medium', allergens: ['peanuts', 'shellfish'], message: 'Often contains peanuts and may contain fish sauce' },
+            'spring rolls': { warning: 'low', allergens: ['soy', 'wheat'], message: 'May contain soy sauce in dipping sauce' },
+            'salad': { warning: 'low', allergens: ['nuts'], message: 'Watch out for dressings and toppings' }
+        };
+
+        const dish = commonDishes[foodItem.toLowerCase()];
+        
+        if (!dish) {
+            return `I'm not sure about "${foodItem}". Please check carefully.`;
+        }
+
+        const userAllergensInDish = dish.allergens.filter(allergen => 
+            this.userAllergens.has(allergen)
+        );
+
+        if (userAllergensInDish.length > 0) {
+            return `⚠️  "${foodItem}" typically contains: ${userAllergensInDish.join(', ')}. ${dish.message}. HIGH RISK.`;
+        } else {
+            return `✅ "${foodItem}" appears generally safe for your allergens, but always verify.`;
+        }
+    }
+
+    // GUARDIAN ALERT: Emergency function
+    setEmergencyContacts(contacts) {
+        this.emergencyContacts = contacts;
+        console.log(`🆕 Emergency contacts set: ${contacts.join(', ')}`);
+    }
+
+    triggerGuardianAlert(location = 'Unknown location') {
+        console.log('🚨 EMERGENCY ALERT ACTIVATED!');
+        console.log('🔴 RED STROBE LIGHT FLASHING');
+        console.log('📢 LOUD AUDIBLE ALARM SOUNDING');
+        
+        const emergencyMessage = `EMERGENCY: User is having an allergic reaction. Location: ${location}. Immediate assistance required.`;
+        
+        // Simulate sending to emergency contacts
+        this.emergencyContacts.forEach(contact => {
+            console.log(`📱 Alert sent to ${contact}: "${emergencyMessage}"`);
+        });
+        
+        this.triggerVibration(true); // Strong vibration
+        this.playSound('emergency');
+    }
+
+    // Helper methods for device feedback
+    triggerVisualFeedback(color) {
+        const colors = {
+            'green': '🟢',
+            'red': '🔴', 
+            'yellow': '🟡'
+        };
+        console.log(`${colors[color]} Visual feedback: ${color.toUpperCase()} light`);
+    }
+
+    playSound(type) {
+        const sounds = {
+            'safe': '🔔 Pleasant chime',
+            'alert': '🚨 Urgent alert sound',
+            'caution': '⚠️ Warning tone',
+            'emergency': '📢 LOUD SIREN'
+        };
+        console.log(sounds[type] || '🔊 Sound played');
+    }
+
+    triggerVibration(strong = false) {
+        console.log(strong ? '📳 STRONG VIBRATION' : '📳 Vibration');
+    }
+
+    // Get device status
+    getStatus() {
+        return {
+            isActive: this.isActive,
+            userAllergens: Array.from(this.userAllergens),
+            emergencyContacts: this.emergencyContacts,
+            protectedAllergens: this.userAllergens.size
+        };
+    }
+}
+
+// Example usage and demonstration
+function demonstrateBena() {
+    console.log('=== BENA ALLERGY DEVICE DEMONSTRATION ===\n');
+    
+    // Create a new Bena device
+    const myBena = new BenaAllergyDevice();
+    
+    // Set user's allergens (MyShield)
+    myBena.setUserAllergens(['peanuts', 'tree nuts', 'dairy']);
+    
+    console.log('\n--- SAFE-SCAN Demonstrations ---');
+    
+    // Scan safe product
+    myBena.safeScan('123456789012'); // Safe cookies
+    
+    console.log('\n--- Scanning unsafe product ---');
+    // Scan unsafe product  
+    myBena.safeScan('987654321098'); // Peanut butter cookies
+    
+    console.log('\n--- Scanning cautious product ---');
+    // Scan cautious product
+    myBena.safeScan('456123789065'); // Granola bar
+    
+    console.log('\n--- QUICK-QUERY Demonstrations ---');
+    // Quick query examples
+    console.log(myBena.quickQuery('butter chicken'));
+    console.log(myBena.quickQuery('pad thai'));
+    console.log(myBena.quickQuery('spring rolls'));
+    
+    console.log('\n--- GUARDIAN ALERT Setup ---');
+    // Set emergency contacts
+    myBena.setEmergencyContacts(['+1234567890', 'mom@email.com']);
+    
+    console.log('\n--- Device Status ---');
+    console.log(myBena.getStatus());
+    
+    console.log('\n=== DEMONSTRATION COMPLETE ===');
+    console.log('🛡️  Bena: "Stay safe and eat confidently!"');
+}
+
+// Uncomment to run the demonstration
+// demonstrateBena();
+
+// Export for use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = BenaAllergyDevice;
+}
