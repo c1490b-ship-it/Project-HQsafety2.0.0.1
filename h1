@@ -1,0 +1,11 @@
+# Security policy and reporting
+name: Security Policy
+
+body:
+  - type: textarea
+    attributes:
+      label: Security Vulnerability Report
+      description: >
+        Please provide details about the security vulnerability.
+      placeholder: >
+        Describe the vulnerability, steps to reproduce, and potential impact...
