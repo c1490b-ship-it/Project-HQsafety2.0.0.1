@@ -1,0 +1,17 @@
+# Example branch protection configuration
+name: Main Branch Protection
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  protection-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for required reviews
+        run: |
+          echo "Branch protection ensures:"
+          echo "- Require pull request reviews"
+          echo "- Require status checks"
+          echo "- Include administrators"
